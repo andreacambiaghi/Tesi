@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grafo di Decisione con BaklavaJS</title>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/baklavajs/dist/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/bulma-switch.min.css') }}">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/iziToast.min.css') }}">
+    <script src="{{url_for('static', filename='js/iziToast.min.js')}}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+
+    <script>
+        window.addEventListener('beforeunload', function (event) {
+           eliminaFileTemporaneo(nomeFileCSV);  
+        });
+    </script>
+
+</head>
+
+<body style="padding: 0px; margin: 0px;" onload="disattiva(); document.getElementById('switchRoundedDefault').checked = false">
+
+    <script>
+        window.onbeforeunload = function(e) {
+            return "";
+        };
+        var precEditor = null;
+    </script>
+
+    <progress id="barProgress" class="progress is-small is-primary" max="100" style="margin-top: 98vh; display: none; position: absolute;">15%</progress>
+
+
+    <div style="display:flex;width:100vw;height:90vh;">
+
+        <div style="max-height: 100%; width: 100%;">
+            <div id="editor"></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; max-height: 100%;" id="containerID">
+
+            <div class="container" style="overflow-y: scroll; overflow-x: hidden; min-height: 90.75%;">
+
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <!--<h1 style="padding-bottom: 2%;"><b>Carica un file..</b></h1>-->
+                  <div style="display: flex; align-items: center;">
+                    <div class="file is-info" style="margin-right: 10px;">
+                      <label class="file-label">
+                        <input class="file-input" type="file" name="resume" id="file-input" accept=".json">
+                        <span class="file-cta">
+                          <span class="file-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
+                              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                              <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                            </svg>
+                          </span>
+                          <span class="file-label">
+                            Carica  
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                    <button onclick="jsonGraph();" class="button is-info">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                      </svg>
+                      &nbspScarica
+                    </button>
+                  </div>
+                </div>
+
+                <hr>
+
+                <h1 style="padding-bottom: 2%;"><b><center>Crea qui un nuovo nodo!</center></b></h1>
+                <div class="input-name">
+                    <label for="node-name">Nome nodo:</label>
+                    <input type="text" id="node-name" placeholder="Nome nodo">
+                </div>
+                <div class="input-type">
+                    <label for="node-type">Tipo nodo:</label>
+                    <div class="select is-small is-hovered">
+                        <select id="node-type" onchange="changeOutNode()">
+                            <option value="">--</option>
+                            <option value="Start">Start</option>
+                            <option value="Nodo">Nodo</option>
+                            <option value="Foglia">Foglia</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="colorPicker" style="padding-bottom: 5%">
+                    <label for="colorpicker">Colore Nodo:</label>
+                    <input type="color" id="colorpicker" value="#343434">
+                </div>
+                <div id="outputs-type" class="outputs-type" style="display: none;">
+                    <label for="output-type">Tipo output:</label>
+                    <div class="select is-small is-hovered">
+                        <select id="output-type" onchange="changeOut()">
+                            <option value="">--</option>
+                            <option value="vf">Vero/Falso</option>
+                            <option value="personal">Categorico</option>
+                            <option value="range">Range</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="output-insert" style="display: none;">
+                    <label for="node-name">Valori categorici di output:</label>
+                    <div class="input-group">
+                        <input type="text" id="input1" placeholder="Nome output"> <!-- value = 'Vero' -->
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="input2" placeholder="Nome output"> <!-- value = 'Falso' -->
+                    </div>
+                    <div id="input-container"></div>
+                    <div class="field">
+                      <input id="switchRoundedOutlinedDefault" type="checkbox" name="switchRoundedOutlinedDefault" class="switch is-rounded is-outlined">
+                      <label for="switchRoundedOutlinedDefault">Altro</label>
+                    </div>
+                </div>
+                <div id="range-insert" style="display: none;">
+                    <label for="node-name">Valori range:</label>
+                    <div class="range-group">
+                        <input type="number" id="range1" placeholder="Valore">
+                    </div>
+                    <div class="range-group">
+                        <input type="number" id="range2" placeholder="Valore">
+                    </div>
+                    <div id="range-container"></div>
+                    <div class="field">
+                      <input id="switchRoundedOutlinedDanger" type="checkbox" name="switchRoundedOutlinedDanger" class="switch is-rounded is-outlined is-danger">
+                      <label for="switchRoundedOutlinedDanger">V2</label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="order: 2; margin-left: auto; margin-right: 0.2%">
+                <button id="add-btn" class="button is-success is-small" disabled><b>+</b></button>
+                <button id="remove-btn" class="button is-danger is-small" disabled><b>-</b></button>
+                <button id="save-btn" class="button is-info is-small"><b>Aggiungi nodo</b></button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <button class="button is-info is-small is-pulled-right" style="margin-top: 1.5%; margin-right: 4%; background-color: rgb(255, 165, 0);" onclick="changeForm()"><b id="btn-change">Nascondi Form Nodi</b></button>     
+
+    <script>
+        function changeForm(){
+            if(document.getElementById("containerID").style.display == "none"){
+                document.getElementById("btn-change").innerHTML = "Nascondi Form Nodi";
+                document.getElementById("containerID").style.display = "flex";
+            }
+            else{
+                document.getElementById("btn-change").innerHTML = "Mostra Form Nodi";
+                document.getElementById("containerID").style.display = "none";
+            }
+        }
+
+      </script>
+
+    <div id="popupContainer" class="popup-container" style="display: none;">
+        <div class="popup">
+          <span class="close" id="closePopup">&times;</span>
+          <h2>Seleziona un file CSV:</h2>
+          <input type="file" id="fileInput" accept=".csv">
+        </div>
+    </div>
+      
+    <script>
+        var popup = false;
+        var fileTemp = false;
+        function apriPopup() {
+            fileTemp = false;
+            popup = false;
+            document.getElementById('popupContainer').style.display = 'block';
+            document.getElementById('fileInput').value = '';
+        }
+
+        function chiudiPopup() {
+            document.getElementById('popupContainer').style.display = 'none';
+        }
+
+        function creaFileTemporaneo(contenuto) {
+            $.ajax({
+                type: "POST",
+                url: "/crea_file_temporaneo", // URL della tua route Flask sul server
+                data: { contenuto: contenuto },
+                success: function(nomeFile) {
+                    //alert("File temporaneo creato sul server: " + nomeFile);
+                    nomeFileCSV = nomeFile;
+                    fileTemp = true;
+                },
+                error: function() {
+                    iziToast.error({
+                        title: 'Error',
+                        message: 'Si è verificato un errore durante la creazione del file sul server.',
+                        position: 'topCenter',
+                        timeout: 2000,
+                    });
+                }
+            });
+        }
+
+        function eliminaFileTemporaneo(nomeFile) {
+            $.ajax({
+                type: "POST",
+                url: "/elimina_file_temporaneo",
+                data: { nome_file: nomeFile },
+                success: function(response) {
+                    console.log(response); // Puoi fare qualcosa con la risposta se necessario
+                },
+                error: function() {
+                    console.error("Si è verificato un errore durante l'eliminazione del file temporaneo.");
+                }
+            });
+        }
+
+
+        function chiudiPopupConX() {
+            chiudiPopup();
+            sbloccaInput();
+            document.getElementById('switchRoundedDefault').checked = false;
+            document.getElementById('switchRoundedDefault').disabled = false;
+            document.getElementById("barProgress").style.display = "none";
+            eliminaFileTemporaneo(nomeFileCSV); 
+        }
+
+        document.getElementById('closePopup').addEventListener('click', chiudiPopupConX);
+
+        document.getElementById('fileInput').onchange = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const fileContent = e.target.result;
+                    //alert("Contenuto del file:\n" + fileContent);
+                    creaFileTemporaneo(fileContent); // Crea il file temporaneo con il contenuto del file
+                    chiudiPopup(); // Chiude il pop-up dopo l'alert
+                    popup = true;
+                };
+                
+                reader.readAsText(file);
+            } else {
+                console.log("Nessun file selezionato.");
+            }
+        };
+
+
+
+        const dropContainer = document.getElementById("popupContainer");
+
+        dropContainer.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropContainer.classList.add("drag-active");
+        }, false);
+
+        dropContainer.addEventListener("dragenter", () => {
+            dropContainer.classList.add("drag-active");
+        });
+
+        dropContainer.addEventListener("dragleave", () => {
+            dropContainer.classList.remove("drag-active");
+        });
+
+        dropContainer.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropContainer.classList.remove("drag-active");
+            const file = e.dataTransfer.files[0]; // Ottieni il file trascinato e rilasciato
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const fileContent = e.target.result;
+                    //alert("Contenuto del file:\n" + fileContent);
+                    creaFileTemporaneo(fileContent); // Crea il file temporaneo con il contenuto del file
+                    chiudiPopup(); // Chiude il pop-up dopo l'alert
+                    popup = true;
+                };
+
+                reader.readAsText(file);
+            } else {
+                console.log("Nessun file trascinato e rilasciato.");
+            }
+        });
+
+
+    </script>
+
+        <div class="field" style="padding-left: 0.5%;">
+            <input id="switchRoundedDefault" type="checkbox" name="switchRoundedDefault" class="switch is-rounded is-success">
+            <label for="switchRoundedDefault">Modalità visualizzazione</label>
+        </div>
+
+        <script type="text/javascript">
+            
+            // Funzione per l'evento change del checkbox
+            function handleCheckboxChange() {
+              var checkbox = document.getElementById("switchRoundedDefault");
+
+              if (checkbox.checked) {
+                testScript();
+              } else {
+                borderBlinkEnd();
+                removeModalOpenFunctionality();
+                rimuoviSpans();
+                sbloccaInput();
+                endVisualizza();
+              }
+            }
+
+            // Aggiungi l'evento change al checkbox
+            var checkbox = document.getElementById("switchRoundedDefault");
+            checkbox.addEventListener("change", handleCheckboxChange);
+
+
+        </script>
+
+        <!--<button onclick="testScript();" class="button is-warning">INIZIO</button>
+        <button onclick="borderBlinkEnd(); removeModalOpenFunctionality(); rimuoviSpans(); sbloccaInput(); endVisualizza()" class="button is-warning">FINE</button>-->
+
+
+    <div>
+
+    <style type="text/css">
+
+         .box {
+            overflow-x: scroll;
+            overflow-y: scroll;
+         }
+
+         .modal.is-active {
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .modal-content {
+          width: 100%;
+          overflow-y: auto;
+          overflow-x: auto;
+        }
+
+        .modal-close {
+            background-color: darkviolet;
+        }
+
+    </style>
+
+    <div id="modal-content" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-content">
+        <div class="box">
+            <div id="result-container"></div>
+        </div>
+        </div>
+        <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+
+        /*
+        =============================================================================
+                               COMUNICAZIONE CON PYTHON
+        =============================================================================
+        */
+
+        var contJson = null;
+        var nomeFileCSV = null
+        function testScript() {
+
+            if(editor.nodes.length === 0) {
+                document.getElementById('switchRoundedDefault').checked = false;
+                iziToast.error({
+                    title: 'Error',
+                    message: 'L\'Editor è vuoto!',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                return
+            }
+
+            var end = false;
+            var idList = [];
+
+            if (!allInput()) {
+                document.getElementById('switchRoundedDefault').checked = false;
+                document.getElementById('switchRoundedDefault').disabled = false;
+                document.getElementById("barProgress").style.display = "none";
+                eliminaFileTemporaneo(nomeFileCSV); 
+                iziToast.error({
+                    title: 'Errore',
+                    message: 'Tutte le interfacce di input devono essere collegate a qualcosa',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+            } else if (!allOutput()) {
+                document.getElementById('switchRoundedDefault').checked = false;
+                document.getElementById('switchRoundedDefault').disabled = false;
+                document.getElementById("barProgress").style.display = "none";
+                eliminaFileTemporaneo(nomeFileCSV); 
+                iziToast.error({
+                    title: 'Errore',
+                    message: 'Tutte le interfacce di output devono essere collegate a qualcosa',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+            } else if (!allOptionsFilled()) {
+                document.getElementById('switchRoundedDefault').checked = false;
+                document.getElementById('switchRoundedDefault').disabled = false;
+                document.getElementById("barProgress").style.display = "none";
+                eliminaFileTemporaneo(nomeFileCSV); 
+                iziToast.error({
+                    title: 'Errore',
+                    message: 'Tutti i campi devono essere riempiti',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+            } else {
+
+                document.getElementById('switchRoundedDefault').disabled = true;
+                document.getElementById("barProgress").style.display = "block";
+                /*swal({
+                    title: "Seleziona un file CSV:",
+                    content: {
+                        element: "input",
+                        attributes: {
+                            type: "file",
+                            accept: ".csv"
+                        },
+                    },
+                }).then((file) => {
+                    if (file) {
+                        alert("File selezionato:", file);
+                        alert(typeof oggetto)
+                        nomeFileCSV = value
+                        // creare copia file
+                        continua();
+                    } else {
+                        console.log("Nessun file selezionato.");
+                    }
+                });*/
+
+                function apriPopupAsync() {
+                    return new Promise((resolve) => {
+                        apriPopup();
+                        
+                        // Controllo asincrono di popup
+                        const intervallo = setInterval(() => {
+                            if (popup && fileTemp) {
+                                clearInterval(intervallo);
+                                resolve(); // Risolve la promessa quando popup diventa true
+                            }
+                        }, 100); // Controlla ogni 100 millisecondi
+                    });
+                }
+
+                // Utilizzo della promessa
+                apriPopupAsync().then(() => {
+                    continua();
+                });
+                
+
+                /*
+                swal({
+                    title: "Nome file CSV:",
+                    content: "input",
+                    allowEscapeKey: true,  // Per consentire la pressione del tasto "Esc"
+                    closeOnClickOutside: false,  // Per evitare la chiusura del modale cliccando fuori
+                }).then((value) => {
+                    if (value === null || value === "") {
+                        // L'utente ha premuto "Esc" o ha lasciato vuoto l'input
+                        alert("Errore: Nome file CSV non valido");
+                    } else {
+                        // L'utente ha inserito un valore valido
+                        nomeFileCSV = value;
+                        continua();
+                    }
+                });
+ 
+                */
+
+                function continua() {
+               
+                document.getElementById('switchRoundedDefault').disabled = true;
+                bloccaInput();
+
+                /*const hash1 = CryptoJS.SHA512(editor).toString();
+                const hash2 = CryptoJS.SHA512(precEditor).toString();
+
+                var entra = true;
+                if(hash1 === hash2) {
+                    end = true;
+                    entra = false;
+                    successTest = true;
+                }*/
+
+                //if(entra || true) {
+                    //precEditor = editor;
+                    var successTest = true;
+                    var completedRequests = 0;
+
+                    for (var i = 0; i < editor.nodes.length; i++) {
+                        completedRequests++;
+                        if(Object.keys(editor.nodes[i].outputInterfaces).length === 0) continue
+                        (function(index) {
+                            if (!editor.nodes[index].options.has('Condizione'))
+                                return;
+
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('GET', '/run_scriptTest?param=' + encodeURIComponent(String(editor.nodes[index].options.get('Condizione').value)) + '&nomeFileCSV=' + encodeURIComponent(nomeFileCSV), true);
+                            xhr.onreadystatechange = function() {
+                                if (xhr.readyState === 4) {
+
+                                    if (xhr.status === 200) {
+                                        var response = JSON.parse(xhr.responseText);
+                                        var result = response.result;
+
+                                        if (!result) {
+                                            successTest = false;
+                                            document.getElementById(editor.nodes[index].id).classList.add('neon-border-error');
+                                            idList.push(editor.nodes[index].id)
+                                        }
+                                    } else {
+                                        console.error('Errore nella richiesta AJAX');
+                                        iziToast.error({
+                                            title: 'Errore',
+                                            message: 'Errore durante l\'esecuzione',
+                                            position: 'topCenter',
+                                            timeout: 2000,
+                                        });
+                                        document.getElementById('switchRoundedDefault').checked = false;
+                                        document.getElementById('switchRoundedDefault').disabled = false;
+                                        document.getElementById("barProgress").style.display = "none";
+                                        eliminaFileTemporaneo(nomeFileCSV); 
+
+                                        successTest = false;
+                                        sbloccaInput();
+                                    }
+
+                                    if (completedRequests === editor.nodes.length) {
+                                        end = true;
+                                    }
+                                }
+                            };
+                            xhr.send();
+                        })(i);
+                    }
+                //}
+
+                var timerTest;
+                (function waitUntilSuccessTest() {
+                    if (!end) {
+                        timerTest = setTimeout(waitUntilSuccessTest, 500);
+                    } else {
+                        if (successTest) {
+                            executeScript();
+                        } else {
+                            sbloccaInput();
+                            clearTimeout(timerTest);
+                            document.getElementById('switchRoundedDefault').checked = false;
+                            document.getElementById('switchRoundedDefault').disabled = false;
+                            document.getElementById("barProgress").style.display = "none";
+                            eliminaFileTemporaneo(nomeFileCSV); 
+                            iziToast.error({
+                                title: 'Errore',
+                                message: 'Questi nodi hanno una condizione errata!',
+                                position: 'topCenter',
+                                timeout: 0,
+                                close: false,
+                                buttons: [
+                                    [
+                                        '<button>Ok Capito</button>',
+                                        function(instance, toast) {
+                                            instance.hide({ transitionOut: 'fadeOut' }, toast, 'buttonName');
+                                            for(var i = 0; i < idList.length; i++) {
+                                                document.getElementById(idList[i]).classList.remove('neon-border-error');
+                                            }
+                                        },
+                                        true
+                                    ]
+                                ]
+                            });
+                        }
+                    }
+                })();
+            }
+            //alert(editor.nodes[4].options.get('Condizione').value)
+            //alert(editor.nodes[4].options.has('Condizione'))
+            }
+        }
+
+
+        let checkInizio = false;
+        function executeScript() {
+
+            var success = false;
+
+            if(!allInput()) {
+                document.getElementById('switchRoundedDefault').checked = false;
+                document.getElementById('switchRoundedDefault').disabled = false;
+                document.getElementById("barProgress").style.display = "none";
+                eliminaFileTemporaneo(nomeFileCSV); 
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Tutte le interfacce di input devono essere collegate a qualcosa',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+            }
+            else if(!allOutput()) {
+                document.getElementById('switchRoundedDefault').checked = false;
+                document.getElementById('switchRoundedDefault').disabled = false;
+                document.getElementById("barProgress").style.display = "none";
+                eliminaFileTemporaneo(nomeFileCSV); 
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Tutte le interfacce di output devono essere collegate a qualcosa',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+            }
+            else if(!allOptionsFilled()) {
+                document.getElementById('switchRoundedDefault').checked = false;
+                document.getElementById('switchRoundedDefault').disabled = false;
+                document.getElementById("barProgress").style.display = "none";
+                eliminaFileTemporaneo(nomeFileCSV); 
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Tutti i campi devono essere riempiti',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+            }
+            else {
+                document.getElementById("barProgress").style.display = "block";
+                document.getElementById('switchRoundedDefault').disabled = true;
+                checkInizio = true;
+                contenutoJSON = creaGrafoJSON();
+                var json_data = JSON.stringify(contenutoJSON);
+
+                $.ajax({
+                    url: '/run_script',
+                    type: 'POST',
+                    data: { 
+                        json_data: json_data,
+                        nomeFileCSV: nomeFileCSV
+                        },
+                    success: function(response) {
+                        console.log('Script eseguito con successo');
+                        success = true;
+                    },
+                    error: function(error) {
+                        sbloccaInput();
+                        console.error('Errore durante l\'esecuzione dello script');
+                        document.getElementById('switchRoundedDefault').checked = false;
+                        document.getElementById('switchRoundedDefault').disabled = false;
+                        document.getElementById("barProgress").style.display = "none";
+                        eliminaFileTemporaneo(nomeFileCSV); 
+                        iziToast.warning({
+                            title: 'Warning',
+                            message: 'Errore durante l\'esecuzione dello script',
+                            position: 'topCenter',
+                            timeout: 2000,
+                        });
+                        return;
+                    }
+                });
+                
+                var timerSuccess;
+                (function waitUntilSuccess() {
+                    if (!success) {
+                        timerSuccess = setTimeout(waitUntilSuccess, 500);
+                    } else {
+                        borderBlink(); addModalOpenFunctionality(); addRow(); bloccaInput();
+                        clearTimeout(timerSuccess);
+                    }
+                })();
+                
+            }
+        }
+
+        function endVisualizza() {
+            iziToast.success({
+                title: 'Success',
+                message: 'Sei uscito dalla modalità visualizzazione',
+                position: 'topCenter',
+                timeout: 2000,
+            });
+            eliminaFileTemporaneo(nomeFileCSV);
+        }
+
+    </script>
+        
+    </div>
+
+    <!-- <script type="text/javascript" src="form_node/script.js"></script> -->
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/baklavajs/dist/index.js"></script>
+    <script>
+        
+        /*
+        =============================================================================
+                                DEFINZIONE DELL'EDITOR
+        =============================================================================
+        */
+
+        const plugin = BaklavaJS.createBaklava(document.getElementById("editor"));
+        const editor = plugin.editor;
+        editor.use(new BaklavaJS.PluginOptionsVue.OptionPlugin());
+
+        /*
+        // Definisci un nodo "Foglia" con solo input
+        const leafNode = new BaklavaJS.Core.NodeBuilder("Foglia")
+            .addInputInterface("Input")
+            .addOption("Valore","InputOption")
+            .build();
+
+        // Definisci un nodo "Nodo" con input, output "Vero" e output "Falso"
+        const nodeNode = new BaklavaJS.Core.NodeBuilder("Nodo")
+            .addInputInterface("Input")
+            .addOutputInterface("Vero")
+            .addOutputInterface("Falso")
+            .addOption("Condizione","InputOption")
+            .build();
+
+        // Definisci un nodo "Start" con solo output "Vero" e output "Falso"
+        const startNode = new BaklavaJS.Core.NodeBuilder("Start")
+            .addOutputInterface("Vero")
+            .addOutputInterface("Falso")
+            .addOption("Condizione","InputOption")
+            .build();
+        */
+
+        // Registra i nodi nell'editor
+        //editor.registerNodeType("Foglia", leafNode);
+        //editor.registerNodeType("Nodo", nodeNode);
+        //editor.registerNodeType("Start", startNode);
+
+        /*
+        =============================================================================
+                                CONTROLLO DEI CICLI
+        =============================================================================
+        */
+
+        // Algoritmo per controllare se ci sono cicli
+        const Status = {
+            NEW: 'NEW',
+            SEEN: 'SEEN',
+            DONE: 'DONE'
+        };
+
+        function hasCycles(connections) {
+            const status = {};
+            const graph = new Map();
+
+            // Costruisci il grafo
+            for (const conn of connections) {
+                const fromNodeId = conn.from.isInput ? conn.to.parent.id : conn.from.parent.id;
+                const toNodeId = conn.to.isInput ? conn.to.parent.id : conn.from.parent.id;
+
+                if (!graph.has(fromNodeId)) {
+                    graph.set(fromNodeId, []);
+                }
+
+                if (!graph.has(toNodeId)) {
+                    graph.set(toNodeId, []);
+                }
+
+                graph.get(fromNodeId).push(toNodeId);
+            }
+
+            function dfs(u) {
+                status[u] = Status.SEEN;
+
+                for (let v of graph.get(u)) {
+                    if (status[v] === Status.SEEN) {
+                        return true; // Ciclo trovato
+                    }
+                    if (status[v] === Status.NEW && dfs(v)) {
+                        return true; // Ciclo trovato in un sottoalbero
+                    }
+                }
+
+                status[u] = Status.DONE;
+                return false;
+            }
+
+            // Inizializza lo stato dei nodi
+            for (const u of graph.keys()) {
+                status[u] = Status.NEW;
+            }
+
+            // Esegui la DFS su tutti i nodi del grafo
+            for (const u of graph.keys()) {
+                if (status[u] === Status.NEW && dfs(u)) {
+                    return true; // Ciclo trovato
+                }
+            }
+
+            return false; // Nessun ciclo trovato
+        }
+
+
+
+        function oneOutput(connection) {
+            if(connection.from.isInput) 
+                return connection.to.connectionCount > 0
+            else 
+                return connection.from.connectionCount > 0;
+        }
+
+
+        /*
+        =============================================================================
+                                CREA FILE JSON
+        =============================================================================
+        */
+
+        function createNode(nodeInput) {
+
+            const outputs = Object.keys(nodeInput.outputInterfaces);
+            const inputs = Object.keys(nodeInput.inputInterfaces);
+
+            if(outputs.length == 0) {
+                return {
+                    id: nodeInput.id,
+                    name: nodeInput.name,
+                    type: "Foglia",
+                    value: nodeInput.options.get('Valore').value
+                };
+            }
+
+            const node = {
+                id: nodeInput.id,
+                name: nodeInput.name,
+                type: "",
+                value: nodeInput.options.get('Condizione').value,
+                outputs: []
+            };
+
+            if(inputs.length > 0)
+                node.type = "Nodo";
+            else
+                node.type = "Start"
+
+            const filteredConnections = editor.connections.filter(connection => connection.from.parent.id === nodeInput.id);
+
+            for(let i = 0; i < outputs.length; i++) {
+                node.outputs.push({
+                    name: outputs[i],
+                    value: ""
+                });
+            }
+
+            for(let i = 0; i < filteredConnections.length; i++) {
+                let index = "";
+                for(let j = 0; j < editor.nodes.length; j++)
+                    if(editor.nodes[j].id === nodeInput.id)
+                        for(let o = 0; o < outputs.length; o++)
+                            if(nodeInput.outputInterfaces[outputs[o]].id == filteredConnections[i].from.id)
+                                index = outputs[o]
+
+                node.outputs.forEach(output => {
+                    if(output.name === index) {
+                        output.value = filteredConnections[i].to.parent.id;
+                    }
+                });
+            }            
+
+            return node;
+        }
+
+
+        function creaGrafoJSON() {
+          
+            const nodi = [];
+            for(let i = 0; i < editor.nodes.length; i++)
+                    nodi.push(createNode(editor.nodes[i]))
+            return JSON.stringify(nodi, null, 2);
+        }
+
+
+        function scaricaJSON(nomeFile, contenutoJSON) {
+          const fileBlob = new Blob([contenutoJSON], {type: 'application/json'});
+          const urlBlob = URL.createObjectURL(fileBlob);
+
+          const linkDownload = document.createElement('a');
+          linkDownload.href = urlBlob;
+          linkDownload.download = nomeFile;
+          linkDownload.click();
+
+          URL.revokeObjectURL(urlBlob);
+        }
+
+        let contenutoJSON;
+        function jsonGraph() {
+
+            if(editor.nodes.length === 0) {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'L\'Editor è vuoto!',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                return
+            }
+
+            // Idea: Il JSON può scaricarlo solo se tutti i nodi hanno qualcosa in input
+            // per evitare di far barare e avere più start
+            if(!allInput()) 
+                 iziToast.error({
+                    title: 'Error',
+                    message: 'Tutte le interfacce di input devono essere collegate a qualcosa',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+            else if(!allOutput()) 
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Tutte le interfacce di output devono essere collegate a qualcosa',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+            else if(!allOptionsFilled()) 
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Tutti i campi devono essere riempiti',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+            else {
+                contenutoJSON = creaGrafoJSON();
+                swal("Ottimo!", "JSON scaricato con successo", "success");
+                //scaricaJSON('grafo.json', contenutoJSON);
+                scaricaJSONBaklava()
+            }
+        }
+
+        function allInput() {
+
+          for(let i = 0; i < editor.nodes.length; i++) {
+            if(Object.keys(editor.nodes[i].inputInterfaces).length > 0) {
+              let hasConnection = false;
+              for(let j = 0; j < editor.connections.length; j++) {
+                if(editor.connections[j].to.id == editor.nodes[i].inputInterfaces['Input'].id) {
+                  hasConnection = true;
+                  break;
+                }
+              }
+              if(!hasConnection) {
+                return false;
+              }
+            }   
+          }
+
+          return true;
+        }
+
+        function allOutput() {
+          const outputInterfacesIds = [];
+          for (let i = 0; i < editor.nodes.length; i++) {
+            const node = editor.nodes[i];
+            const outputs = Object.keys(node.outputInterfaces);
+            for (let j = 0; j < outputs.length; j++) {
+              outputInterfacesIds.push(node.outputInterfaces[outputs[j]].id);
+            }
+          }
+          for (let i = 0; i < editor.connections.length; i++) {
+            const connection = editor.connections[i];
+            const index = outputInterfacesIds.indexOf(connection.from.id);
+            if (index !== -1) {
+              outputInterfacesIds.splice(index, 1);
+            }
+          }
+          return outputInterfacesIds.length === 0;
+        }
+
+
+        function allOptionsFilled() {
+          for (let i = 0; i < editor.nodes.length; i++) {
+            let options = editor.nodes[i].options;
+            if (
+              Object.keys(editor.nodes[i].outputInterfaces).length === 0 &&
+              (editor.nodes[i].options.get('Valore').value === null)
+            ) {
+                return false;
+            } else if (
+              Object.keys(editor.nodes[i].outputInterfaces).length > 0 &&
+              (editor.nodes[i].options.get('Condizione').value === null)
+            ) {
+                return false;
+            }
+          }
+          return true;
+        }
+
+
+
+
+        /*
+        =============================================================================
+                                GESTIONE FORM NODI
+        =============================================================================
+        */
+
+        var setNodes = new Set();
+
+        var inputCount = 2;
+        var rangeCount = 2;
+        var inputs = [];
+
+        document.getElementById('add-btn').addEventListener('click', function() {
+            if(document.getElementById("output-insert").style.display == "block") {
+                inputCount++;
+                var inputGroup = document.createElement('div');
+                inputGroup.className = 'input-group';
+                inputGroup.innerHTML = '<input class = "animate__animated animate__bounceInLeft" type="text" id="input' + inputCount + '" value="" placeholder="Nome output">';
+
+                document.getElementById('input-container').appendChild(inputGroup);
+                if (inputCount > 2) {
+                    document.getElementById('remove-btn').disabled = false;
+                }
+            } else if(document.getElementById("range-insert").style.display == "block") {
+                rangeCount++;
+                var rangeGroup = document.createElement('div');
+                rangeGroup.className = 'range-group';
+                rangeGroup.innerHTML = '<input class = "animate__animated animate__bounceInLeft" type="number" id="range' + rangeCount + '" value="" placeholder="Valore">';
+
+                document.getElementById('range-container').appendChild(rangeGroup);
+                if (rangeCount > 2) {
+                    document.getElementById('remove-btn').disabled = false;
+                }
+            }
+        });
+
+        document.getElementById('remove-btn').addEventListener('click', function() {
+            if(document.getElementById("output-insert").style.display == "block") {
+                if (inputCount > 2) {
+                    document.getElementById("input"+inputCount).classList.add("animate__bounceOutRight");
+                    var inputContainer = document.getElementById('input-container');
+                    var lastInputGroup = inputContainer.lastChild;
+                    //inputContainer.removeChild(lastInputGroup)
+                    setTimeout(() => {
+                        inputContainer.removeChild(lastInputGroup);
+                        inputCount--;
+                        if (inputCount === 2) {
+                            document.getElementById('remove-btn').disabled = true;
+                        }
+                    },500);
+                    //inputCount--;
+                }
+            } else if(document.getElementById("range-insert").style.display == "block") {
+                if (rangeCount > 2) {
+                    document.getElementById("range"+rangeCount).classList.add("animate__bounceOutRight");
+                    var rangeContainer = document.getElementById('range-container');
+                    var lastRangeGroup = rangeContainer.lastChild;
+                    //rangeContainer.removeChild(lastRangeGroup)
+                    setTimeout(() => {
+                        rangeContainer.removeChild(lastRangeGroup);
+                        rangeCount--;
+                        if (rangeCount === 2) {
+                            document.getElementById('remove-btn').disabled = true;
+                        }
+                    },500);
+                    //inputCount--;
+                }
+            }
+        });
+
+        var nodesEditor = [];
+        var startNode = false;
+        document.getElementById('save-btn').addEventListener('click', function() {
+            var nodeName = document.getElementById('node-name').value;
+            var nodeType = document.getElementById('node-type').value;
+            var outputType = document.getElementById('output-type').value;
+            var outputs = [];
+            if(outputType == "personal")
+                for (var i = 1; i <= inputCount; i++) {
+                    var inputValue = document.getElementById('input' + i).value;
+                    outputs.push(inputValue);
+                }
+            else if(outputType == "range")
+                for (var i = 1; i <= rangeCount; i++) {
+                    var rangeValue = document.getElementById('range' + i).value;
+                    outputs.push(rangeValue);
+                }
+
+            // Validazione dei campi
+            if (nodeName === '' || nodeType === '' || (outputs.some(output => output === '') && outputType == "personal") || (outputType === '' && nodeType !== "Foglia")) {
+                iziToast.warning({
+                    title: 'Warning',
+                    message: 'Per favore, compila tutti i campi prima di salvare.',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                return;
+            }
+
+            if(outputType == "personal" && new Set(outputs).size != outputs.length) {
+                iziToast.warning({
+                    title: 'Warning',
+                    message: 'Gli output devono essere diversi',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                return;
+            }
+
+            if(setNodes.has(nodeName)) {
+                iziToast.warning({
+                    title: 'Warning',
+                    message: 'Esiste già un nodo di tipo "' + nodeName + '"',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                return;
+            }
+
+            //alert("Nome Nodo: " + nodeName + "\nTipo Nodo: " + nodeType + "\nOutputs: " + outputs.join(", "));
+
+            if(outputType == "vf") outputs = ["Vero","Falso"];
+            if(outputType == "range") {
+                outputs.sort(function(a, b) {
+                    return a - b;
+                });
+                var tempOut = outputs;
+                outputs = [];
+                if(!document.getElementById("switchRoundedOutlinedDanger").checked) {
+                    outputs.push("x < " + tempOut[0]);
+
+                    for(var i = 1; i < tempOut.length; i++)
+                        outputs.push(tempOut[i - 1] + " <= x < " + tempOut[i])
+
+                    outputs.push("x >= " + tempOut[tempOut.length - 1]);
+                } else {
+                    outputs.push("x <= " + tempOut[0]);
+
+                    for(var i = 1; i < tempOut.length; i++)
+                        outputs.push(tempOut[i - 1] + " < x <= " + tempOut[i])
+
+                    outputs.push("x > " + tempOut[tempOut.length - 1]);
+                }
+            }
+
+            if(nodeType === "Start") {
+                const app = new BaklavaJS.Core.NodeBuilder(nodeName);
+                outputs.forEach(el => app.addOutputInterface(el));
+                if(document.getElementById('switchRoundedOutlinedDefault').checked) app.addOutputInterface("_Altro")
+                app.addOption("Condizione","InputOption");
+                editor.registerNodeType(nodeName, app.build());
+                startNode = true;
+            } else if(nodeType === "Nodo") {
+                const app = new BaklavaJS.Core.NodeBuilder(nodeName);
+                outputs.forEach(el => app.addOutputInterface(el));
+                if(document.getElementById('switchRoundedOutlinedDefault').checked) app.addOutputInterface("_Altro")
+                app.addInputInterface("Input");
+                app.addOption("Condizione","InputOption");
+                editor.registerNodeType(nodeName, app.build());
+            } else if(nodeType === "Foglia") {
+                const app = new BaklavaJS.Core.NodeBuilder(nodeName);
+                app.addInputInterface("Input");
+                app.addOption("Valore","InputOption");
+                editor.registerNodeType(nodeName, app.build());
+            }
+
+            setNodes.add(nodeName);
+
+            const colorNode = document.getElementById('colorpicker').value
+            mapColor.set(nodeName, colorNode);
+            colora(nodeName, nodeType, colorNode);
+            disattiva();
+            document.getElementById("output-insert").style.display = "none";
+            document.getElementById("range-insert").style.display = "none";
+            document.getElementById('outputs-type').style.display = "none"
+            iziToast.success({
+                title: 'OK',
+                message: 'Nuovo nodo aggiunto correttamente!',
+                position: 'topCenter',
+                timeout: 1500,
+            });
+            
+        });
+
+        function disattiva(){
+
+            document.getElementById('switchRoundedOutlinedDefault').checked = false
+            document.getElementById('switchRoundedOutlinedDanger').checked = false
+
+
+            document.getElementById('node-name').value = '';
+            document.getElementById('node-type').value = '';
+            for (var i = 1; i <= inputCount; i++) {
+                    document.getElementById('input' + i).value = '';
+                }
+                for (var i = inputCount; i > 2; i--) {
+                    var inputContainer = document.getElementById('input-container');
+                    var lastInputGroup = inputContainer.lastChild;
+                    inputContainer.removeChild(lastInputGroup);
+                }
+                inputCount = 2;
+            for (var i = 1; i <= rangeCount; i++) {
+                document.getElementById('range' + i).value = '';
+            }
+            for (var i = rangeCount; i > 2; i--) {
+                var rangeContainer = document.getElementById('range-container');
+                var lastRangeGroup = rangeContainer.lastChild;
+                rangeContainer.removeChild(lastRangeGroup);
+            }
+            rangeCount = 2;
+            document.getElementById('input-container').innerHTML = '';
+            document.getElementById('remove-btn').disabled = true;
+            document.getElementById('add-btn').disabled = true;
+            document.getElementById('output-type').value = '';
+            document.getElementById('colorpicker').value = '#343434';            
+        }  
+
+        function countStart() {
+            var contaStart = 0;
+            for(let i = 0; i < editor.nodes.length; i++)
+                if(Object.keys(editor.nodes[i].inputInterfaces).length === 0)
+                    contaStart = contaStart + 1;
+            return contaStart;
+        }
+
+
+        /*
+        =============================================================================
+                                GESTIONE CAMBIO TIPO OUTPUT
+        =============================================================================
+        */
+
+        let mapColor = new Map();
+
+        function changeOut() {
+            const appVal = document.getElementById('output-type').value;
+            if(appVal == 'vf' || appVal == "") {
+                document.getElementById('output-insert').style.display = "none";
+                document.getElementById('range-insert').style.display = "none";
+                document.getElementById('add-btn').disabled = true;
+                document.getElementById('remove-btn').disabled = true;
+                for (var i = 1; i <= inputCount; i++) {
+                    document.getElementById('input' + i).value = '';
+                }
+                for (var i = inputCount; i > 2; i--) {
+                    var inputContainer = document.getElementById('input-container');
+                    var lastInputGroup = inputContainer.lastChild;
+                    inputContainer.removeChild(lastInputGroup);
+                }
+                inputCount = 2;
+                for (var i = 1; i <= rangeCount; i++) {
+                    document.getElementById('range' + i).value = '';
+                }
+                for (var i = rangeCount; i > 2; i--) {
+                    var rangeContainer = document.getElementById('range-container');
+                    var lastRangeGroup = rangeContainer.lastChild;
+                    rangeContainer.removeChild(lastRangeGroup);
+                }
+                rangeCount = 2;
+                document.getElementById('range-container').innerHTML = '';
+
+            } else if(appVal == "personal") {
+                document.getElementById('remove-btn').disabled = true;
+                for (var i = rangeCount; i > 2; i--) {
+                    var rangeContainer = document.getElementById('range-container');
+                    var lastRangeGroup = rangeContainer.lastChild;
+                    rangeContainer.removeChild(lastRangeGroup);
+                }
+                document.getElementById('range-insert').style.display = "none";
+                document.getElementById('output-insert').style.display = "block";
+                document.getElementById('add-btn').disabled = false;
+                for (var i = 1; i <= rangeCount; i++) {
+                    document.getElementById('range' + i).value = '';
+                }
+                for (var i = rangeCount; i > 2; i--) {
+                    var rangeContainer = document.getElementById('range-container');
+                    var lastRangeGroup = rangeContainer.lastChild;
+                    rangeContainer.removeChild(lastRangeGroup);
+                }
+                rangeCount = 2;
+                inputCount = 2;
+            } else if(appVal == "range") {
+                document.getElementById('remove-btn').disabled = true;
+                 for (var i = inputCount; i > 2; i--) {
+                    var inputContainer = document.getElementById('input-container');
+                    var lastInputGroup = inputContainer.lastChild;
+                    inputContainer.removeChild(lastInputGroup);
+                }
+                document.getElementById('output-insert').style.display = "none";
+                document.getElementById('range-insert').style.display = "block";
+                document.getElementById('add-btn').disabled = false;
+                for (var i = 1; i <= inputCount; i++) {
+                    document.getElementById('input' + i).value = '';
+                }
+                for (var i = inputCount; i > 2; i--) {
+                    var inputContainer = document.getElementById('input-container');
+                    var lastInputGroup = inputContainer.lastChild;
+                    inputContainer.removeChild(lastInputGroup);
+                }
+                inputCount = 2;
+                rangeCount = 2;
+            }
+        }
+
+        function changeOutNode() {
+            const appValNode = document.getElementById('node-type').value;
+            if(appValNode == 'Foglia' || appValNode == "") {
+                document.getElementById('output-type').value = "";
+                document.getElementById('outputs-type').style.display = "none";
+                document.getElementById('output-insert').style.display = "none";
+                document.getElementById('range-insert').style.display = "none";
+                document.getElementById('add-btn').disabled = true;
+                document.getElementById('remove-btn').disabled = true;
+                for (var i = 1; i <= inputCount; i++) {
+                    document.getElementById('input' + i).value = '';
+                }
+                for (var i = 1; i <= inputCount; i++) {
+                    document.getElementById('range' + i).value = '';
+                }
+                inputCount = 2;
+                document.getElementById('input-container').innerHTML = '';
+            } else {
+                document.getElementById('outputs-type').style.display = "block";
+            }
+        }
+
+        /*
+        =============================================================================
+                                GESTIONE DEGLI EVENTI
+        =============================================================================
+        */
+
+        // Un solo nodo di start (per volta) può essere aggiunto all'editor
+       const tokenStart = { nome: "startControl" }; // definizione del token
+
+        editor.events.beforeAddNode.addListener(tokenStart, (arg1) => {
+            if (Object.keys(arg1.inputInterfaces) == 0 && countStart() == 1) {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'C\'è già un nodo start nell\'editor',
+                    position: 'topCenter',
+                    timeout: 1500,
+                });
+                return false;
+            }
+            // ne approfitto per controllare se sono in una situazione in cui non posso aggiungere nodi
+            if (blocco) {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Non si possono aggiungere nodi in questa modalità',
+                    position: 'topCenter',
+                    timeout: 1500,
+                });
+                return false;
+            }
+        });
+
+        // Rimuoviamo il listener utilizzando il token
+        // editor.events.myEvent.removeListener(myToken);
+
+
+        // Non ci possono essere dei cicli
+        const tokenCycle = { nome: "cycleControl" }; // definizione del token
+
+        editor.events.beforeAddConnection.addListener(tokenCycle, (arg1) => {
+            if (hasCycles(editor.connections.concat([arg1]))) {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Impossibile connettere! Il grafo non ammette cicli!',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                return false;
+            }
+            // ne approfitto per controllare se sono in una situazione in cui non posso aggiungere connessioni
+            if (blocco) {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Non si possono aggiungere connessioni in questa modalità',
+                    position: 'topCenter',
+                    timeout: 1500,
+                });
+                return false;
+            }
+        });
+
+        // Un nodo può avere un solo output
+        const tokenOneOutput = { nome: "oneOutputControl" }; // definizione del token
+
+        editor.events.beforeAddConnection.addListener(tokenOneOutput, (arg1) => {
+            if (oneOutput(arg1)) {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Un nodo può avere un solo output',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                return false;
+            }
+        });
+
+        /*)
+        // Controllo cambio options (STAND BY)
+        const tokenProva = { nome: "provoControl" }; // definizione del token
+
+        editor.events.addNode.addListener(tokenProva, (arg1) => {
+            alert("MARIO");
+           const tokenProva2 = { nome: "provoControl" + String(arg1) }
+           alert(arg1.options.get('Condizione'));
+           arg1.options.get('Condizione').events.updated.addListener(tokenProva2, (arg2) => {
+            alert("AAA");
+           });
+        });
+        */
+
+        // Non posso eliminare nodi in una situazione di blocco
+        const tokenDelete = { nome: "deleteControl" }; // definizione del token
+
+        editor.events.beforeRemoveNode.addListener(tokenDelete, (arg1) => {
+            if (blocco) {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Non si possono eliminare nodi in questa modalità',
+                    position: 'topCenter',
+                    timeout: 1500,
+                });
+                return false;
+            }
+        });
+
+        // Non posso eliminare connessioni in una situazione di blocco
+        const tokenDeleteConn = { nome: "deleteConnControl" }; // definizione del token
+
+        editor.events.beforeRemoveConnection.addListener(tokenDeleteConn, (arg1) => {
+            if (blocco) {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Non si possono eliminare connessioni in questa modalità',
+                    position: 'topCenter',
+                    timeout: 1500,
+                });
+                return false;
+            }
+        });
+        
+        /*
+        =============================================================================
+                                GESTIONE COLORI NODI
+        =============================================================================
+        */
+
+        // crea una mappa vuota per memorizzare i colori dei tipi
+        var colorMap = {};
+
+        // crea un nuovo elemento style
+        var stile = document.createElement('style');
+
+        // aggiungi lo stile alla pagina
+        document.head.appendChild(stile);
+
+        function colora(name, type, color) {
+            stile.sheet.insertRule(`.--type-${name} { background-color: ${color}; }`, stile.sheet.cssRules.length);
+            colorMap[`--type-${name}`] = color;
+        }
+
+        /*
+        =============================================================================
+                                GESTIONE BORDO LAMPEGGIANTE
+        =============================================================================
+        */
+
+        
+        // Seleziona l'elemento dell'editor
+        const editorNode = document.querySelector('.editor');
+
+        // Seleziona tutti gli elementi con la classe desiderata
+        let elements;
+
+        // Funzione di gestione per l'evento click
+        function borderBlinkStart(event) {
+            
+            elements.forEach(el => {
+              if (el !== this) {
+                el.classList.remove('neon-border');
+              }
+            });
+
+            // Aggiungi la classe "neon-border" all'elemento cliccato
+            this.classList.add('neon-border');
+
+            let input = this.id;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/calculate?param=' + encodeURIComponent(input), true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    var result = response.result;
+                    document.getElementById('result-container').innerHTML = result;
+                } else if (xhr.readyState === 4) {
+                    console.error('Errore nella richiesta AJAX');
+
+                }
+            };
+            xhr.send();
+        }
+
+        function borderBlink() {
+            if(!checkInizio) return false;
+            // Aggiungi la funzione di onclick a tutti gli elementi
+            elements = document.querySelectorAll('.node');
+            elements.forEach(element => {
+                element.addEventListener('click', borderBlinkStart);
+            });
+        }
+
+        // Per rimuovere la funzione di onclick da tutti gli elementi
+        function borderBlinkEnd() {
+            checkInizio = false;
+            elements.forEach(element => {
+                element.classList.remove('neon-border');
+                element.removeEventListener('click', borderBlinkStart);
+            });
+
+        }
+
+        /*
+        =============================================================================
+                                GESTIONE MODALE
+        =============================================================================
+        */
+
+        function addModalOpenFunctionality() {
+          if (!checkInizio) return false;
+          const divsWithNode = document.querySelectorAll('div[id*="node_"]');
+          const modal = document.getElementById('modal-content');
+          const closeModalButton = modal.querySelector('.modal-close');
+
+          divsWithNode.forEach((div) => {
+            div.addEventListener('click', openModal);
+          });
+
+          closeModalButton.addEventListener('click', closeModal);
+          modal.addEventListener('click', closeModalOnOutsideClick);
+          document.addEventListener('keydown', closeModalOnEsc);
+        }
+
+        function removeModalOpenFunctionality() {
+          const divsWithNode = document.querySelectorAll('div[id*="node_"]');
+          const modal = document.getElementById('modal-content');
+          const closeModalButton = modal.querySelector('.modal-close');
+
+          divsWithNode.forEach((div) => {
+            div.removeEventListener('click', openModal);
+          });
+
+          closeModalButton.removeEventListener('click', closeModal);
+          modal.removeEventListener('click', closeModalOnOutsideClick);
+          document.removeEventListener('keydown', closeModalOnEsc);
+        }
+
+        function openModal() {
+          const modal = document.getElementById('modal-content');
+          modal.classList.add('is-active');
+        }
+
+        function closeModal() {
+          const modal = document.getElementById('modal-content');
+          modal.classList.remove('is-active');
+          document.getElementById('result-container').innerHTML = "";
+        }
+
+        function closeModalOnOutsideClick(event) {
+          const modalContent = document.querySelector('.modal-content');
+          if (!modalContent.contains(event.target)) {
+            closeModal();
+          }
+        }
+
+        function closeModalOnEsc(event) {
+          if (event.key === 'Escape') {
+            closeModal();
+          }
+        }
+
+
+        /*
+        =============================================================================
+                                IMPORT GRAFO
+        =============================================================================
+        */
+
+
+        function scaricaJSONBaklava() {
+          const graphState = editor.save();
+
+          graphState.colorMap = colorMap;
+
+          const jsonString = JSON.stringify(graphState);
+
+          const blob = new Blob([jsonString], { type: 'application/json' });
+
+          const downloadUrl = URL.createObjectURL(blob);
+
+          const downloadLink = document.createElement('a');
+          downloadLink.href = downloadUrl;
+          downloadLink.download = 'grafo.json';
+          downloadLink.click();
+
+          // Rilascia l'URL dell'oggetto Blob
+          URL.revokeObjectURL(downloadUrl);
+        }
+
+        const fileInput = document.getElementById('file-input');
+
+        fileInput.addEventListener('change', (event) => {
+          const file = event.target.files[0];
+
+          const reader = new FileReader();
+
+          reader.onload = (event) => {
+            const json = event.target.result;
+
+            try {
+                const state = JSON.parse(json);
+
+                const colorMap = state.colorMap;
+                delete state.colorMap;
+
+                for (var key in colorMap) {
+                    stile.sheet.insertRule(`.${key} { background-color: ${colorMap[key]}; }`, stile.sheet.cssRules.length);
+                }
+
+                swal("Ottimo!", "JSON caricato con successo", "success");
+
+                parseImport(state);
+                editor.load(state);
+            } catch (error) {
+                swal("Errore", "Errore nel formato del file JSON", "error");
+            }
+          };
+
+          reader.onerror = () => {
+            swal("Errore", "Errore durante il caricamento del file", "error");
+          };
+
+          reader.readAsText(file);
+        });
+
+
+        function parseImport(state) {
+            var addNodes;
+            var added = new Set();
+            for (const node of state.nodes) {
+
+                if (!added.has(node.type)) {
+
+                    added.add(node.type);
+
+                    addNodes = new BaklavaJS.Core.NodeBuilder(node.type);
+
+                    for (const interface of node.interfaces)
+                        if (interface[0] == 'Input')
+                            addNodes.addInputInterface(interface[0]);
+                        else
+                            addNodes.addOutputInterface(interface[0]);
+
+                    addNodes.addOption(node.options[0][0],"InputOption");
+                    editor.registerNodeType(node.type, addNodes.build());
+
+                }
+            }
+
+        }
+
+        /*
+        =============================================================================
+                                NUMERO DI RIGHE NODO
+        =============================================================================
+        */
+
+
+        function addRow() {
+            var errorCheck = false;
+            if(!checkInizio) return false;
+            var nodi = document.querySelectorAll(".node");
+
+            for (var i = 0; i < nodi.length; i++) {
+                (function(index) {
+                  var nodo = nodi[index];
+                  var titoloNodo = nodo.querySelector(".__title");
+
+                  var spanId = "mioSpan" + nodo.id;
+                  var vecchioSpan = titoloNodo.querySelector("#" + spanId);
+
+                  if (!vecchioSpan) {
+                    vecchioSpan = document.createElement("span");
+                    vecchioSpan.id = spanId;
+                    titoloNodo.appendChild(vecchioSpan);
+                  }
+
+                  var xhr = new XMLHttpRequest();
+                  xhr.open('GET', '/calculate?param=' + encodeURIComponent(nodo.id), true);
+                  xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                      var response = JSON.parse(xhr.responseText);
+                      var tableHTML = response.result;
+                      var rowsCount = countTableRows(tableHTML);
+                      vecchioSpan.innerText = "## " + rowsCount + " Righe ##";
+                    } else if (xhr.readyState === 4) {
+                      console.error('Errore nella richiesta AJAX');
+                      errorCheck = true;
+                    }
+                  };
+                  xhr.send();
+                })(i);
+            }
+
+            if(errorCheck) {
+                iziToast.error({
+                    title: 'Errore',
+                    message: 'Errore durante l\'esecuzione dello script',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                document.getElementById("barProgress").style.display = "none";
+                eliminaFileTemporaneo(nomeFileCSV); 
+                document.getElementById('switchRoundedDefault').disabled = false;
+            }
+            else {
+                iziToast.success({
+                    title: 'Success',
+                    message: 'Sei entrato in modalità visualizzazione',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                document.getElementById("barProgress").style.display = "none";
+                eliminaFileTemporaneo(nomeFileCSV); 
+                document.getElementById('switchRoundedDefault').disabled = false;
+            }
+        }
+
+
+        function countTableRows(tableHTML) {
+          var tempContainer = document.createElement('div');
+          tempContainer.innerHTML = tableHTML;
+
+          var rows = tempContainer.querySelectorAll('tr');
+          var rowCount = rows.length;
+
+          return rowCount - 1;
+        }
+
+        function rimuoviSpans() {
+          var nodi = document.querySelectorAll(".node");
+
+          for (var i = 0; i < nodi.length; i++) {
+            var nodo = nodi[i];
+            var spanId = "mioSpan" + nodo.id;
+            document.getElementById(spanId).innerHTML = ""
+          }
+        }
+
+        /*
+        =============================================================================
+                                BLOCCO/SBLOCCO FUNZIONI NODO
+        =============================================================================
+        */
+
+        let blocco = false; 
+
+        function bloccaInput() {
+            //if(!checkInizio) return false;
+            blocco = true;
+            const inputs = document.querySelectorAll('.dark-input');
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+
+            const fileInput = document.getElementById('file-input');
+            fileInput.disabled = true;
+            fileInput.parentNode.classList.add('is-disabled');
+        }
+
+        function sbloccaInput() {
+
+            blocco = false;
+            const inputs = document.querySelectorAll('.dark-input');
+            inputs.forEach(input => {
+                input.disabled = false;
+            });
+
+            const fileInput = document.getElementById('file-input');
+            fileInput.disabled = false;
+            fileInput.parentNode.classList.remove('is-disabled');
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Modifica output</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Modifica output</h2>
+        <div class="input-name">
+            <label for="node-name">Nome nodo:</label>
+            <input type="text" id="node-name" value="">
+        </div>
+        <div class="input-type">
+            <label for="node-type">Tipo nodo:</label>
+            <select id="node-type">
+                <option value="">--</option>
+                <option value="tipo1">Tipo 1</option>
+                <option value="tipo2">Tipo 2</option>
+                <option value="tipo3">Tipo 3</option>
+            </select>
+        </div>
+        <label for="node-name">Outputs:</label>
+        <div class="input-group">
+            <input type="text" id="input1"> <!-- value = 'Vero' -->
+        </div>
+        <div class="input-group">
+            <input type="text" id="input2"> <!-- value = 'Falso' -->
+        </div>
+        <div id="input-container"></div>
+        <button id="add-btn">+</button>
+        <button id="remove-btn" class="disabled">-</button>
+        <button id="save-btn">Salva</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+.container {
+    width: 300px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.input-group,
+.input-name,
+.input-type,
+.outputs-type {
+    margin-bottom: 10px;
+}
+
+.input-group input,
+.input-name input,
+.input-type input,
+.outputs-type input {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+#save-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+#save-btn:hover {
+    background-color: #0056b3;
+}
+
+#remove-btn {
+    margin-left: 5px;
+}

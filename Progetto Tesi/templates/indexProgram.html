@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Files</title>
+    
+    <!-- Stili iziToast -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/iziToast.min.css') }}">
+    <script src="{{url_for('static', filename='js/iziToast.min.js')}}"></script>
+    
+    <!-- Stili Bulma -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        #mainContainer {
+            text-align: center;
+            margin: 20px;
+        }
+
+        #mainContainer > div {
+            margin-bottom: 20px;
+        }
+
+        #tableContainer {
+            margin-top: 20px;
+            display: none;
+        }
+
+        #resultTable {
+            width: 100%;
+        }
+
+        #mainContainer button {
+            margin: 0 10px;
+        }
+
+    </style>
+
+    <script>
+        function openFileInput(inputId) {
+            document.getElementById(inputId).click();
+        }
+
+        function showFileDialog() {
+            var fileInput = document.getElementById('fileInput');
+            fileInput.value = null;
+            fileInput.click();
+        }
+
+        function handleFileSelected(inputId, buttonId) {
+            var fileInput = document.getElementById(inputId);
+            if (fileInput.files.length > 0) {
+                var filename = fileInput.files[0].name;
+                var fileType = filename.split('.').pop().toUpperCase();
+                var fileTypeMessage = fileType === 'JSON' ? 'JSON' : 'CSV';
+                
+                iziToast.success({
+                    title: 'Success',
+                    message: 'File ' + fileTypeMessage + ' inserito con successo!',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                
+                document.getElementById(buttonId).disabled = true;
+                document.getElementById(buttonId).textContent = filename;
+            }
+        }
+
+        function handleSubmit() {
+            var jsonData = document.getElementById('jsonFileInput').files[0];
+            var csvData = document.getElementById('csvFileInput').files[0];
+            
+            if (!jsonData || !csvData) {
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Si prega di caricare entrambi i file prima di confermare.',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('jsonData', jsonData);
+            formData.append('csvData', csvData);
+
+            $.ajax({
+                url: '/process_files',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    console.log(response);
+                    iziToast.success({
+                        title: 'Success',
+                        message: 'I file sono stati inviati correttamente.',
+                        position: 'topCenter',
+                        timeout: 2000,
+                    });
+                },
+                error: function(error) {
+                    console.error(error);
+                    iziToast.error({
+                        title: 'Error',
+                        message: 'Si è verificato un errore durante l\'invio dei file.',
+                        position: 'topCenter',
+                        timeout: 2000,
+                    });
+                }
+            });
+        }
+    </script>
+
+</head>
+<body>
+
+    <div id="mainContainer">
+        <br><br><br>
+        <div id="buttonsContainer">
+            <div>
+                <button id="jsonButton" class="button is-primary is-light is-medium" onclick="openFileInput('jsonFileInput')">File JSON</button>
+                <input type="file" id="jsonFileInput" style="display: none;" accept=".json" onchange="handleFileSelected('jsonFileInput', 'jsonButton')">
+            </div>
+        </div>
+        <div>
+            <div>
+                <button id="csvButton" class="button is-primary is-light is-medium" onclick="openFileInput('csvFileInput')">File CSV</button>
+                <input type="file" id="csvFileInput" style="display: none;" accept=".csv" onchange="handleFileSelected('csvFileInput', 'csvButton')">
+            </div>
+        </div>
+        <div>
+            <div>
+                <button id="submitButton" class="button is-success is-medium" onclick="handleSubmit()">Conferma</button>
+            </div>
+        </div>
+        <div id="tableContainer">
+            <div>
+                <h2 class="title is-4">Risultato del Processo:</h2>
+                <div>
+                    <table id="resultTable" class="table is-bordered is-striped is-narrow is-hoverable">
+                        <!-- Tabella dei risultati verrà aggiunta qui tramite JavaScript -->
+                    </table>
+                </div>
+                <div>
+                    <button id="saveButton" class="button is-danger is-medium" onclick="saveTable()" style="margin-top: 20px;">Salva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+
+    
+
+<script>
+    function handleSubmit() {
+        var jsonData = document.getElementById('jsonFileInput').files[0];
+        var csvData = document.getElementById('csvFileInput').files[0];
+        
+        if (!jsonData || !csvData) {
+            iziToast.error({
+                title: 'Error',
+                message: 'Si prega di caricare entrambi i file prima di confermare.',
+                position: 'topCenter',
+                timeout: 2000,
+            });
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('jsonData', jsonData);
+        formData.append('csvData', csvData);
+
+        $.ajax({
+            url: '/process_files',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                console.log(response);
+                displayResultTable(response.table);
+            },
+            error: function(error) {
+                console.error(error);
+                iziToast.error({
+                    title: 'Error',
+                    message: 'Si è verificato un errore durante l\'invio dei file.',
+                    position: 'topCenter',
+                    timeout: 2000,
+                });
+            }
+        });
+    }
+
+    function displayResultTable(tableData) {
+        var table = document.getElementById('resultTable');
+        table.innerHTML = ''; // Pulisci la tabella
+
+        // Dividi la stringa in righe
+        var rows = tableData.trim().split('\n'); // Rimuovi spazi vuoti iniziali e finali
+
+        // Estrai l'header dalla prima riga
+        var headerCells = rows.shift().split(',');
+        var headerRow = table.insertRow();
+        headerCells.forEach(function(headerCellData) {
+            var headerCell = headerRow.insertCell();
+            headerCell.textContent = headerCellData;
+            headerCell.classList.add('has-text-weight-bold'); // Aggiungi stile al testo in grassetto
+        });
+
+        // Aggiungi le righe dei dati
+        rows.forEach(function(rowData) {
+            // Ignora le righe vuote
+            if (rowData.trim() !== '') {
+                var cells = rowData.split(',');
+                var row = table.insertRow();
+                cells.forEach(function(cellData) {
+                    var cell = row.insertCell();
+                    cell.textContent = cellData;
+                });
+            }
+        });
+
+        // Mostra la tabella risultante
+        document.getElementById('tableContainer').style.display = 'flex';
+    }
+
+
+    function saveTable() {
+        var table = document.getElementById('resultTable');
+        var csvContent = '';
+
+        for (var i = 0; i < table.rows.length; i++) {
+            var rowData = table.rows[i].cells;
+
+            for (var j = 0; j < rowData.length; j++) {
+                csvContent += rowData[j].textContent + ",";
+            }
+            csvContent = csvContent.slice(0, -1); // Rimuovi l'ultima virgola dalla riga
+            csvContent += "\n";
+        }
+
+        // Converti il contenuto CSV in un oggetto Blob
+        var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+        // Crea un link temporaneo per il download
+        var link = document.createElement('a');
+        if (link.download !== undefined) { // Verifica se il browser supporta l'attributo "download"
+            var url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'table_data.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            // Gestione del download se il browser non supporta l'attributo "download"
+            window.open('data:text/csv;charset=utf-8,' + escape(csvContent));
+        }
+    }
+
+</script>
+
+</body>
+</html>
+

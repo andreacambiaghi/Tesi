@@ -1,0 +1,52 @@
+.buttonJSON {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #512da8;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buttonJSON:hover {
+  background-color: #6a1b9a;
+}
+
+
+
+.neon-border {
+  position: relative;
+}
+
+.neon-border::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 10px;
+  /* background: linear-gradient(45deg, rgba(255, 0, 0, 0.6), rgba(255, 0, 0, 0.3), rgba(255, 0, 0, 0.6)); */
+  background: linear-gradient(45deg, rgba(123, 104, 238, 0.6), rgba(123, 104, 238, 0.3), rgba(123, 104, 238, 0.6));
+  opacity: 0;
+  animation: neon-animation 1s ease-in-out infinite;
+}
+
+@keyframes neon-animation {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+

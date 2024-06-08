@@ -1,0 +1,1 @@
+python app.py nome_file_funzioni1.py ... nome_file_funzioni2.py

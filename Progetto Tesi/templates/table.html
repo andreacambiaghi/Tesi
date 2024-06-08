@@ -1,0 +1,95 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visualizza DataFrame</title>
+    <style>
+      .table {
+          width: 100%;
+          border-collapse: collapse;
+      }
+      .table th, .table td {
+          padding: 12px 15px;
+          text-align: center; /* Testi centrati */
+          border-bottom: 1px solid #ccc;
+          position: relative;
+      }
+      .table th:not(:first-child), .table td:not(:first-child) {
+          border-left: 1px solid #ccc;
+      }
+      .table th:first-child, .table td:first-child {
+          border-left: none;
+      }
+      .table th {
+          background-color: #f2f2f2;
+      }
+      .table tbody tr:hover {
+          background-color: #f9f9f9;
+      }
+      .table td {
+          vertical-align: top;
+      }
+
+      @media screen and (max-width: 800px) {
+      tr { 
+        display: flex; 
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin: 0.5em 0;
+        border: 1px solid rgba(3,3,3,0.2);
+      }
+      td, th {
+        flex: 1 1 150px;
+        border: 0.5px solid rgba(3,3,3,0.2);
+      }
+      td.edit-buttons, td.empty {
+        /*flex: 1 0 90%;
+        text-align: center;*/
+      }
+    }
+
+</style>
+
+</head>
+<body>
+    <h1>Visualizza DataFrame</h1>
+    
+    <form id="input-form">
+        <input type="text" id="input-text" placeholder="Inserisci una professione">
+        <button type="submit" id="calculate-btn" disabled>Mostra</button>
+    </form>
+
+    <div id="result-container"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#input-text').on('input', function() {
+                var input = $(this).val();
+                if (input.trim() !== '') {
+                    $('#calculate-btn').prop('disabled', false);
+                } else {
+                    $('#calculate-btn').prop('disabled', true);
+                }
+            });
+
+            $('#input-form').submit(function(event) {
+                event.preventDefault();
+                var input = $('#input-text').val();
+                $.ajax({
+                    url: '/calculate',
+                    type: 'GET',
+                    data: {param: input},
+                    success: function(response) {
+                        var result = response.result;
+                        $('#result-container').html(result);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
